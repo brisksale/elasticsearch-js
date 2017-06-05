@@ -7,5 +7,6 @@ module.exports = {
   '2.4': require('./2_4'),
   '5.x': require('./5_x'),
   '5.4': require('./5_4'),
+  '5.4/future':require('./5_4_future'),
   'master': require('./master')
 };

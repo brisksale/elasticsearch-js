@@ -9,5 +9,6 @@ module.exports = {
   get '0.90'() { return require('./0_90'); },
   get '5.x'() { return require('./5_x'); },
   get '5.4'() { return require('./5_4'); },
+  get '5.4/future'() { return require('./5_4_future'); },
   get 'master'() { return require('./master'); },
 };

@@ -1,3 +1,5 @@
+const {assign} = Object
+const {Future} = require("brisksale-algebraic-types");
 
 var _ = require('./utils');
 
@@ -6,6 +8,13 @@ var _ = require('./utils');
  * @type {Function}
  */
 exports.makeFactoryWithModifier = makeFactoryWithModifier;
+
+/**
+ * Constructs a client action factory that uses specific defaults
+ * and the api returns futures
+ * @type {Function}
+ */
+exports.futurizeMakeFactoryWithModifier = futurizeMakeFactoryWithModifier;
 
 /**
  * Constructs a function that can be called to make a request to ES
@@ -33,6 +42,21 @@ exports.namespaceFactory = function () {
 
   return ClientNamespace;
 };
+
+//wrapper to create future versions of api. 
+//function is a bit messy because the original function creates dfunctions dynamically so I need to create
+//references so that they are computed eagerly
+const futurizeMakeFactoryWithModifier = (modifier) => {
+  const factory = makeFactoryWithModifier(modifier)
+  return (spec) => {
+    const action = factory(spec)
+    return (...params) =>
+      Future(
+        (rej, res)=>
+					void action(...params, (err, result, status) => err ? rej(assign(err, {body:result, status})) : res(result))
+      )
+  }
+}
 
 function makeFactoryWithModifier(modifier) {
   modifier = modifier || _.identity;

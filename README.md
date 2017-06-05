@@ -7,7 +7,7 @@ The official low-level Elasticsearch client for Node.js and the browser.
 
 ## Features
 
- - One-to-one mapping with REST API and the other official clients
+ - One-to-one mapping with REST API and the other official clientsd
  - Generalized, pluggable architecture. See [Extending Core Components](http://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/extending_core_components.html)
  - Configurable, automatic discovery of cluster nodes
  - Persistent, Keep-Alive connections

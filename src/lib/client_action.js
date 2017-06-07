@@ -43,19 +43,62 @@ exports.namespaceFactory = function () {
   return ClientNamespace;
 };
 
-//wrapper to create future versions of api. 
-//function is a bit messy because the original function creates dfunctions dynamically so I need to create
-//references so that they are computed eagerly
-const futurizeMakeFactoryWithModifier = (modifier) => {
-  const factory = makeFactoryWithModifier(modifier)
-  return (spec) => {
-    const action = factory(spec)
-    return (...params) =>
-      Future(
-        (rej, res)=>
-					void action(...params, (err, result, status) => err ? rej(assign(err, {body:result, status})) : res(result))
+//because of the binding to this, copyin the function is the only way instead of just wrapping it
+function futurizeMakeFactoryWithModifier(modifier) {
+  modifier = modifier || _.identity;
+
+  var factory = function (spec) {
+    spec = modifier(spec);
+
+    if (!_.isPlainObject(spec.params)) {
+      spec.params = {};
+    }
+
+    if (!spec.method) {
+      spec.method = 'GET';
+    }
+    //remove cb since we are returning a future
+    function action(params) {
+      let client = this;
+      return Future(
+        (rej, res)=>{
+          const cb = (err, result, status) => 
+            err ? rej(assign(err, {body:result, status})) : res(result)
+          try {
+            // console.log(_that)
+            return void exec(client.transport, spec, _.clone(params), cb);
+          } catch (e) {
+            _.nextTick(cb, e);
+          }
+        }
+					
       )
-  }
+    }
+
+    action.spec = spec;
+
+    return action;
+  };
+
+  factory.proxy = function (fn, spec) {
+    return function (params, cb) {
+      if (typeof params === 'function') {
+        cb = params;
+        params = {};
+      } else {
+        params = params || {};
+        cb = typeof cb === 'function' ? cb : null;
+      }
+
+      if (spec.transform) {
+        spec.transform(params);
+      }
+
+      return fn.call(this, params, cb);
+    };
+  };
+
+  return factory;
 }
 
 function makeFactoryWithModifier(modifier) {

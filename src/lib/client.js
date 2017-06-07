@@ -59,6 +59,13 @@ function Client(config) {
     _.each(EsApiClient.prototype, _.bind(function (Fn, prop) {
       if (Fn.prototype instanceof clientAction.ApiNamespace) {
         this[prop] = new Fn(this.transport, this);
+      }else{
+        // This library is depenedt on binding to transport 
+        //so in order for the future to work I need to explicitley bind to this
+        if(typeof this[prop] === 'function'){
+          this[prop] = this[prop].bind(this)
+        }
+          //.transport = this.transport
       }
     }, this));
 

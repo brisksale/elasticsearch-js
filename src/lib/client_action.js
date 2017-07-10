@@ -1,5 +1,5 @@
 const {assign} = Object
-const {Future} = require("brisksale-algebraic-types");
+const {Action} = require("brisksale-algebraic-types");
 
 var _ = require('./utils');
 
@@ -11,7 +11,7 @@ exports.makeFactoryWithModifier = makeFactoryWithModifier;
 
 /**
  * Constructs a client action factory that uses specific defaults
- * and the api returns futures
+ * and the api returns Action ds
  * @type {Function}
  */
 exports.futurizeMakeFactoryWithModifier = futurizeMakeFactoryWithModifier;
@@ -57,10 +57,10 @@ function futurizeMakeFactoryWithModifier(modifier) {
     if (!spec.method) {
       spec.method = 'GET';
     }
-    //remove cb since we are returning a future
+    //remove cb since we are returning a Action
     function action(params) {
       let client = this;
-      return Future(
+      return Action(
         (rej, res)=>{
           const cb = (err, result, status) => 
             err ? rej(assign(err, {body:result, status})) : res(result)
